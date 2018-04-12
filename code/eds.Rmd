@@ -1,0 +1,14 @@
+---
+title: "EDS"
+author: "Phoebe Abramowitz"
+date: "4/12/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+raw_birthrates = read.csv("../data/daily-total-female-births-in-cal.csv")
+```
+
