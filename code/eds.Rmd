@@ -8,18 +8,42 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r clean data}
+#Data Cleaning
+```{r}
+#load packages
 library(dplyr)
 library(astsa)
+
+#read in data
 raw_birthrates = read.csv("../data/daily-total-female-births-in-cal.csv")
+
+#remove final row
 clean_birthrates <- filter(raw_birthrates, Date!="Daily total female births in California")
+
+#define column names
 colnames(clean_birthrates) <-  c('date',"daily_female_births")
+
+#convert dates to Data data type
 clean_birthrates$date <- as.Date(clean_birthrates$date)
+
+#make dates row names
+birthrates <- clean_birthrates$daily_female_births
+female_birthrates <- data.frame(birthrates)
+rownames(female_birthrates) <- clean_birthrates$date
+
+#examine data
+head(female_birthrates)
 ```
 ```{r}
 ts.plot(clean_birthrates$daily_female_births)
 mean(clean_birthrates$daily_female_births)
 #mean is 41.98082, make ts zero-mean
 ```
+#EDA
+```{r}
+#plot time series
+plot.ts(female_birthrates, main = "Time Series Plot of Female Birthrate Data")
+```
+
 
  
