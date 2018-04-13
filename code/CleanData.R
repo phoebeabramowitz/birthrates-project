@@ -1,19 +1,7 @@
----
-title: "EDS"
-author: "Phoebe Abramowitz"
-date: "4/12/2018"
-output: github_document
----
+#Description: This R file cleans our data
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
-```{r clean data}
-#load packages
+#load dplyr
 library(dplyr)
-library(astsa)
 
 #read in data
 raw_birthrates = read.csv("../data/daily-total-female-births-in-cal.csv")
@@ -32,13 +20,5 @@ birthrates <- clean_birthrates$daily_female_births
 female_birthrates <- data.frame(birthrates)
 rownames(female_birthrates) <- clean_birthrates$date
 
-#examine data
-head(female_birthrates)
-```
-
-```{r}
-plot.ts(female_birthrates)
-```
-
-
- 
+#write in data
+write.csv(female_birthrates, file = "../data/clean_data.csv", row.names = TRUE)
