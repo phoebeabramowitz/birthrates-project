@@ -17,7 +17,9 @@ colnames(clean_birthrates) <-  c('date',"daily_female_births")
 clean_birthrates$date <- as.Date(clean_birthrates$date)
 ```
 ```{r}
-plot(clean_birthrates)
+ts.plot(clean_birthrates$daily_female_births)
+mean(clean_birthrates$daily_female_births)
+#mean is 41.98082, make ts zero-mean
 ```
 
  
