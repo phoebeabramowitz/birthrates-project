@@ -1,0 +1,23 @@
+---
+title: "Report Writeup"
+author: "Phoebe Abramowitz"
+date: "4/13/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+*I'm assuming we'll just copy past this in later*
+
+#Introduction: 
+
+Elaborate on the background of the problem/dataset.  Where does the dataset come from?  How are the data collected?
+
+The dataset describes the number of daily female births in California in 1959. The units are a count and there are 365 observations. The data is provided by the Time Series Data Library. The data originally comes from analysis of birth certificates (I'll confirm this with a reliable source not just the random sentance I found).
+
+Explain the motivation for studying the particular dataset of interest.  Why is the dataset interesting?
+
+  This dataset is both interesting for the sake of general curiosity and for the impact that date of birth can have on individual's lives. For example, in his book *Outliers*, Malcolm Gladwell demonstrates that being born in a month such that you're the oldest of your cohort in school and childhood activities leads to increased rates of success. 
+  In probability, the "birthday problem" is often discussed with the premise that "all birthdays are equally likeley". However, the reasoning for and extent of the disclaimer that this is not necessarily true is rarely expounded upon in these discussions. 
+

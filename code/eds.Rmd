@@ -65,6 +65,7 @@ plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrat
 ```{r}
 #acf of time series detrended via OLS
 acf(reg$residuals, main = "ACF of Birthrates Detrended via OLS")
+pacf(reg$residuals, main = "PACF of Birthrates Detrended via OLS")
 ```
  
 
