@@ -8,7 +8,16 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r}
+```{r clean data}
+library(dplyr)
+library(astsa)
 raw_birthrates = read.csv("../data/daily-total-female-births-in-cal.csv")
+clean_birthrates <- filter(raw_birthrates, Date!="Daily total female births in California")
+colnames(clean_birthrates) <-  c('date',"daily_female_births")
+clean_birthrates$date <- as.Date(clean_birthrates$date)
+```
+```{r}
+plot(clean_birthrates)
 ```
 
+ 
