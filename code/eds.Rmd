@@ -1,6 +1,6 @@
 ---
-title: "EDS"
-author: "Phoebe Abramowitz"
+title: "EDA"
+author: "Phoebe Abramowitz and Jack Moorer"
 date: "4/12/2018"
 output: github_document
 ---
@@ -8,8 +8,10 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 #Data Cleaning
-```{r}
+
+```{r clean data}
 #load packages
 library(dplyr)
 library(astsa)
@@ -34,16 +36,64 @@ rownames(female_birthrates) <- clean_birthrates$date
 #examine data
 head(female_birthrates)
 ```
-```{r}
-ts.plot(clean_birthrates$daily_female_births)
-mean(clean_birthrates$daily_female_births)
-#mean is 41.98082, make ts zero-mean
-```
+
 #EDA
 ```{r}
 #plot time series
 plot.ts(female_birthrates, main = "Time Series Plot of Female Birthrate Data")
 ```
 
+Let's see if there is an underlying trend in our data by fitting a linear model.
 
+```{r}
+#regress birthrates on time
+x <- 1:nrow(female_birthrates)
+reg <- lm(birthrates ~ x)
+#plot ts with regression model
+plot.ts(female_birthrates)
+abline(a = reg$coefficients[[1]], b = reg$coefficients[[2]], col = 'red')
+```
  
+It seems like there is a slight trend. Let's plot the residuals of the regression, which should be the detrended time series.
+
+
+```{r}
+#plot detrended time series vie OLS regression
+plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrates Detrended", xlab = "Time")
+```
+ 
+```{r}
+#acf of time series detrended via OLS
+acf(reg$residuals, main = "ACF of Birthrates Detrended via OLS")
+```
+ 
+
+Let's look at the first difference.
+ 
+ 
+```{r}
+#take the first difference of the time series
+diff_vals <- diff(birthrates)
+
+#create differnce dataframe
+first_diff <- data.frame(diff_vals)
+plot.ts(first_diff, main = "First Difference of Birthrates Time Series")
+```
+ 
+```{r}
+#plot acf of first diffence
+acf(first_diff, main = "ACF of First Difference of Birthrates")
+```
+ 
+Let's look at the second difference.
+
+```{r}
+second_diff_vals <- diff(diff(birthrates))
+
+#create differnce dataframe
+second_diff <- data.frame(second_diff_vals)
+plot.ts(second_diff, main = "First Difference of Birthrates Time Series")
+```
+```{r}
+#acf of second diff
+acf(second_diff, main = "ACF of Second Difference of Birthrates")
