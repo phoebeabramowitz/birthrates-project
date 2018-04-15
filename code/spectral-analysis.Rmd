@@ -18,15 +18,18 @@ library(TSA)
 Note to Self: Look to this example for guidance
 https://bcourses.berkeley.edu/courses/1468637/files?preview=72935387
 ```{r}
-#Or I should do this by sourcing to use detrended data, figure this out
 female_birthrates <- read.csv('../data/clean_data.csv')
+#can't source eds Rmd, but can source CleanData
+source('./CleanData.R')
+female_birthrates
 ```
 ```{r}
 #detrend using Jack's OLS code(consolidate later)
 plot.ts(female_birthrates, main = "Time Series with OLS regression line")
-abline(reg = lm(female_birthrates ~ time(female_birthrates)), col = 'red')
+abline(reg=lm(female_birthrates ~ time(female_birthrates)), col = 'red')
 plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrates Detrended", xlab = "Time")
 abline(lm(resid(reg) ~ time(resid(reg))), col = 'red')
+
 #use fem_birth for now going forward for figuring out spectral analysis
 fem_birth <- reg$residuals
 ```
@@ -36,24 +39,59 @@ Probably just write about this in conclusions since it's out of the scope of our
 
 Look at the periodogram, then the smoothed periodogram
 ```{r}
-#spec.pgram automatically accounts for linear detrend, only use fem_birth specifically if we end up detrending a different way
+#spec.pgram automatically accounts for linear detrend, only use fem_birth specifically if detrending a different way
 spec.pgram(fem_birth)
-#try different values for the kernel/taper
+#try different values for the kernel & taper
 mvspec(fem_birth,kernel('daniell',3), taper = 0.1)
 mvspec(fem_birth,kernel('modified.daniell',3), taper = 0.2)
 mvspec(fem_birth,kernel('modified.daniell',5), taper = 0)
-#Best One in next chunk, use this
+#Best One in next chunk, use that
 ```
-From this smoothed periodogram, we can choose the top three lags and feed the modal. 
+From this smoothed periodogram, we can choose the top three lags and feed the modal. We append the first fundamental frequency.
 ```{r}
-##Apply code form bcourses here
-pgram <- spec.pgram(female_birthrates,kernel('modified.daniell',c(1,6,1)), taper = 0.1)
-key_freq_ind <- which(diff(sign(diff(pgram$spec)))==-2) + 1
-key_freq_ind
-#ask in office hours how to get my key_freq to work
+pgram <- spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log='no')
+key_freq_ind <- c(1, which(diff(sign(diff(pgram$spec)))==-2) + 1)
 key_freq <- pgram$freq[key_freq_ind]
-abline(v=key_freq, lty=2)
+abline(v=key_freq, lty=3)
+top_freq <- key_freq[order(pgram$spec[key_freq_ind], decreasing = T)][1:3]
 ```
+
+We can then compare with the parametric spectral estimator (the red dotted line):
+
+```{r}
+pgram <- spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1)
+#This pse absolutely does not look right
+pgram_ar <- spec.ar(fem_birth, plot=F)
+lines(pgram_ar$freq, pgram_ar$spec, lty=2, col="red")
+```
+Use the three frequencies to generate features (sin terms and cosine terms).We use the following model:\\
+$$t=\alpha+\beta t+\sum_{j=1}^3 c_jcos(2\pi \omega*jt)+d_j cos(2\pi \omega*jt)+w_t$$
+
+```{r}
+t <- 1:length(fem_birth)
+periodic_terms <- do.call(cbind, lapply(top_freq, function(freq) {
+  cbind(cos(2 * pi * freq * t), sin(2 * pi * freq * t))
+}))
+df <- data.frame(fem_birth, t, periodic_terms)
+fit_final <- lm(fem_birth ~ ., df)
+plot(t, fem_birth, type="l")
+lines(t, fit_final$fitted.values, lty=2, col="red")
+```
+Then, forecast the next 24 obervations.
+```{r}
+t_new <- (tail(t, 1) + 1):(tail(t, 1) + 24)
+periodic_terms_new <- do.call(cbind, lapply(top_freq, function(freq) {
+  cbind(cos(2 * pi * freq * t_new), sin(2 * pi * freq * t_new))
+}))
+df_new <- data.frame(t_new, periodic_terms_new)
+colnames(df_new) <- colnames(df)[-1]
+predictions <- predict.lm(fit_final, newdata=df_new,interval="prediction", level=.95)
+plot(t, fem_birth, type="l", xlim=c(0, tail(t_new, 1)))
+lines(t, fit_final$fitted.values, lty=2, col="red")
+lines(t_new, predictions[, "fit"], col="blue")
+matlines(t_new, predictions[, 2:3], col = "purple", lty=3)
+```
+
 
 
 
