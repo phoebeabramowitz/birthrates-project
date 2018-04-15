@@ -1,0 +1,59 @@
+---
+title: "Spectral Analysis"
+author: "Phoebe Abramowitz"
+date: "4/13/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+#load packages
+library(dplyr)
+library(astsa)
+library(tseries)
+library(TSA)
+```
+Note to Self: Look to this example for guidance
+https://bcourses.berkeley.edu/courses/1468637/files?preview=72935387
+```{r}
+#Or I should do this by sourcing to use detrended data, figure this out
+female_birthrates <- read.csv('../data/clean_data.csv')
+```
+```{r}
+#detrend using Jack's OLS code(consolidate later)
+plot.ts(female_birthrates, main = "Time Series with OLS regression line")
+abline(reg = lm(female_birthrates ~ time(female_birthrates)), col = 'red')
+plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrates Detrended", xlab = "Time")
+abline(lm(resid(reg) ~ time(resid(reg))), col = 'red')
+#use fem_birth for now going forward for figuring out spectral analysis
+fem_birth <- reg$residuals
+```
+
+Seasonality: given that we only have one year, how do we account for spike in September?
+Probably just write about this in conclusions since it's out of the scope of our dataset.
+
+Look at the periodogram, then the smoothed periodogram
+```{r}
+#spec.pgram automatically accounts for linear detrend, only use fem_birth specifically if we end up detrending a different way
+spec.pgram(fem_birth)
+#try different values for the kernel/taper
+mvspec(fem_birth,kernel('daniell',3), taper = 0.1)
+mvspec(fem_birth,kernel('modified.daniell',3), taper = 0.2)
+mvspec(fem_birth,kernel('modified.daniell',5), taper = 0)
+#Best One in next chunk, use this
+```
+From this smoothed periodogram, we can choose the top three lags and feed the modal. 
+```{r}
+##Apply code form bcourses here
+pgram <- spec.pgram(female_birthrates,kernel('modified.daniell',c(1,6,1)), taper = 0.1)
+key_freq_ind <- which(diff(sign(diff(pgram$spec)))==-2) + 1
+key_freq_ind
+#ask in office hours how to get my key_freq to work
+key_freq <- pgram$freq[key_freq_ind]
+abline(v=key_freq, lty=2)
+```
+
+
+
