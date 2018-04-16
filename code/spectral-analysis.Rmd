@@ -18,24 +18,23 @@ library(TSA)
 Note to Self: Look to this example for guidance
 https://bcourses.berkeley.edu/courses/1468637/files?preview=72935387
 ```{r}
-female_birthrates <- read.csv('../data/clean_data.csv')
-#can't source eds Rmd, but can source CleanData
 source('./CleanData.R')
-female_birthrates
+#female_birthrates <- read.csv('../data/clean_data.csv')
 ```
 ```{r}
-#detrend using Jack's OLS code(consolidate later)
-plot.ts(female_birthrates, main = "Time Series with OLS regression line")
-abline(reg=lm(female_birthrates ~ time(female_birthrates)), col = 'red')
-plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrates Detrended", xlab = "Time")
-abline(lm(resid(reg) ~ time(resid(reg))), col = 'red')
-
-#use fem_birth for now going forward for figuring out spectral analysis
-fem_birth <- reg$residuals
+# #detrend using Jack's OLS code(consolidate/change later)
+# plot.ts(female_birthrates, main = "Time Series with OLS regression line")
+# abline(reg=lm(female_birthrates ~ time(female_birthrates)), col = 'red')
+# plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrates Detrended", xlab = "Time")
+# abline(lm(resid(reg) ~ time(resid(reg))), col = 'red')
+# #use fem_birth for now going forward for figuring out spectral analysis
+# fem_birth <- reg$residuals
+```
+Detrend using differencing once. 
+```{r}
+fem_birth <- diff(female_birthrates)
 ```
 
-Seasonality: given that we only have one year, how do we account for spike in September?
-Probably just write about this in conclusions since it's out of the scope of our dataset.
 
 Look at the periodogram, then the smoothed periodogram
 ```{r}
