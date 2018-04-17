@@ -67,25 +67,25 @@ Use the three frequencies to generate features (sin terms and cosine terms).We u
 $$t=\alpha+\beta t+\sum_{j=1}^3 c_jcos(2\pi \omega*jt)+d_j cos(2\pi \omega*jt)+w_t$$
 
 ```{r}
-t <- 1:length(fem_birth)
+t <- 1:length(female_birthrates)
 periodic_terms <- do.call(cbind, lapply(top_freq, function(freq) {
   cbind(cos(2 * pi * freq * t), sin(2 * pi * freq * t))
 }))
-df <- data.frame(fem_birth, t, periodic_terms)
-fit_final <- lm(fem_birth ~ ., df)
-plot(t, fem_birth, type="l")
+df <- data.frame(female_birthrates, t, periodic_terms)
+fit_final <- lm(female_birthrates ~ ., df)
+plot(t, female_birthrates, type="l")
 lines(t, fit_final$fitted.values, lty=2, col="red")
 ```
-Then, forecast the next 24 obervations.
+Then, forecast the next 30 obervations(1 month).
 ```{r}
-t_new <- (tail(t, 1) + 1):(tail(t, 1) + 24)
+t_new <- (tail(t, 1) + 1):(tail(t, 1) + 30)
 periodic_terms_new <- do.call(cbind, lapply(top_freq, function(freq) {
   cbind(cos(2 * pi * freq * t_new), sin(2 * pi * freq * t_new))
 }))
 df_new <- data.frame(t_new, periodic_terms_new)
 colnames(df_new) <- colnames(df)[-1]
 predictions <- predict.lm(fit_final, newdata=df_new,interval="prediction", level=.95)
-plot(t, fem_birth, type="l", xlim=c(0, tail(t_new, 1)))
+plot(t, female_birthrates, type="l", xlim=c(0, tail(t_new, 1)))
 lines(t, fit_final$fitted.values, lty=2, col="red")
 lines(t_new, predictions[, "fit"], col="blue")
 matlines(t_new, predictions[, 2:3], col = "purple", lty=3)
