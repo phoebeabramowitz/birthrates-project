@@ -1,7 +1,7 @@
 ---
 title: "Stat 153 Project"
 author: "Phoebe Abramowitz and Jack Moorer"
-output: github_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}

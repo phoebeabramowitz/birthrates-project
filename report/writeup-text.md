@@ -80,6 +80,27 @@ The test MSE for the ARIMA(20, 1, 21) model was 46.5991992308594. The test MSE f
 
 As you can see, the forecast does not look like it is doing a great job, and the confidence interval is much too large. We have pretty clear evidence that an ARIMA method will not be able to model the female birthrates dataset.
 
+Spectral Analysis
+=================
+
+Let's look at the periodogram of our detrended data, detrended here using differencing once. ![periodogram](../images/periodogram.pdf)
+
+Then, take the smoothed periodogram. ![smoothed-periodogram](../images/smoothed-periodogram.pdf)
+
+From this smoothed periodogram, we can choose the top three lags and feed the modal.
+
+We append the first fundamental frequency and exhibit all local maxima on the periodogram before selecting the top three lags. ![smoothed-periodogram](../images/pgram-local-maxima.pdf)
+
+The top three lags we observe are: 0.3813333 0.3706667 0.4240000
+
+We can then compare with the parametric spectral estimator (the red dotted line): ![parametric-spectral-estimator](../images/parametric-spectral-estimator.pdf)
+
+We can use our three frequencies to generate features (sin terms and cosine terms). We use the following model:\\
+$$t=\\alpha+\\beta t+\\sum\_{j=1}^3 c\_jcos(2\\pi \\omega\*jt)+d\_j cos(2\\pi \\omega\*jt)+w\_t$$
+ Then, lastly, we'll forecast the next 30 obervations(1 month) with a 95% confidence level on our plot of the generated features. ![spectral-predictions](../images/spectral-predictions.pdf)
+
+The bounds of our confidence interval encapsulate most of the observed values from the entire dataset at every point, and thus aren't particularly informative.
+
 Conclusion
 ==========
 
@@ -318,6 +339,77 @@ sink('../results/arima_test_results.txt')
 ar_test_1
 ar_test_2
 sink()
+
+##Spectral Analysis Appendix
+#load data and detrend using differencing
+source('./CleanData.R')
+fem_birth <- diff(female_birthrates)
+
+#make periodogram of the data
+pdf('../images/periodogram.pdf')
+spec.pgram(fem_birth)
+dev.off()
+
+#For smoothed periodogram, try different values for the kernel & taper
+pdf('../images/smoothed-pgram-1.pdf')
+spec.pgram(fem_birth,kernel('daniell',3), taper = 0.1)
+dev.off()
+pdf('../images/smoothed-pgram-2.pdf')
+spec.pgram(fem_birth,kernel('modified.daniell',3), taper = 0.2)
+dev.off()
+pdf('../images/smoothed-pgram-3.pdf')
+spec.pgram(fem_birth,kernel('modified.daniell',5), taper = 0)
+dev.off()
+pdf('../images/smoothed-periodogram.pdf')
+spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
+dev.off()
+
+#exhibit all local maxima
+pdf('../images/pgram-local-maxima.pdf')
+pgram <- spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
+key_freq_ind <- c(1, which(diff(sign(diff(pgram$spec)))==-2) + 1)
+key_freq <- pgram$freq[key_freq_ind]
+abline(v=key_freq, lty=3)
+dev.off()
+
+#choose the top three lags
+top_freq <- key_freq[order(pgram$spec[key_freq_ind], decreasing = T)][1:3]
+
+#compare to the parametric spectral estimator
+pdf('../images/parametric-spectral-estimator.pdf')
+pgram <- spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
+pgram_ar <- spec.ar(fem_birth, plot=F)
+lines(pgram_ar$freq, pgram_ar$spec, lty=2, col="red")
+dev.off()
+
+#generate features
+t <- 1:length(female_birthrates)
+periodic_terms <- do.call(cbind, lapply(top_freq, function(freq) {
+  cbind(cos(2 * pi * freq * t), sin(2 * pi * freq * t))
+}))
+df <- data.frame(female_birthrates, t, periodic_terms)
+fit_final <- lm(female_birthrates ~ ., df)
+#plot
+pdf('../images/parametric-spectral-estimator.pdf')
+plot(t, female_birthrates, type="l")
+lines(t, fit_final$fitted.values, lty=2, col="red")
+dev.off()
+
+# forecast the next 30 obervations with a 95% confidence level.
+t_new <- (tail(t, 1) + 1):(tail(t, 1) + 30)
+periodic_terms_new <- do.call(cbind, lapply(top_freq, function(freq) {
+  cbind(cos(2 * pi * freq * t_new), sin(2 * pi * freq * t_new))
+}))
+df_new <- data.frame(t_new, periodic_terms_new)
+colnames(df_new) <- colnames(df)[-1]
+predictions <- predict.lm(fit_final, newdata=df_new,interval="prediction", level=.95)
+#plot predictions and interval
+pdf('../images/spectral-predictions.pdf')
+plot(t, female_birthrates, type="l", xlim=c(0, tail(t_new, 1)))
+lines(t, fit_final$fitted.values, lty=2, col="red")
+lines(t_new, predictions[, "fit"], col="blue")
+matlines(t_new, predictions[, 2:3], col = "purple", lty=3)
+dev.off()
 ```
 
 Second differenced model
