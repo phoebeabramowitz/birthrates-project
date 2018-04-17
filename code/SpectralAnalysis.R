@@ -14,10 +14,15 @@ spec.pgram(fem_birth)
 dev.off()
 
 #For smoothed periodogram, try different values for the kernel & taper
+pdf('../images/smoothed-pgram-1.pdf')
 spec.pgram(fem_birth,kernel('daniell',3), taper = 0.1)
+dev.off()
+pdf('../images/smoothed-pgram-2.pdf')
 spec.pgram(fem_birth,kernel('modified.daniell',3), taper = 0.2)
+dev.off()
+pdf('../images/smoothed-pgram-3.pdf')
 spec.pgram(fem_birth,kernel('modified.daniell',5), taper = 0)
-
+dev.off()
 pdf('../images/smoothed-periodogram.pdf')
 spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
 dev.off()
