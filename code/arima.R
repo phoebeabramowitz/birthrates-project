@@ -111,8 +111,8 @@ dev.off()
 
 pdf('../images/firstdiff_ts_acf_pacf.pdf')
 par(mfrow = c(2, 1))
-acf(first_diff, main = "ACF of First Difference of Birthrates")
-pacf(first_diff, main = "PACF of First Difference of Birthrates")
+acf(diff(female_birthrates), main = "ACF of First Difference of Birthrates")
+pacf(diff(female_birthrates), main = "PACF of First Difference of Birthrates")
 dev.off()
 
 #get second diff
@@ -120,15 +120,15 @@ second_diff_vals <- diff(diff(female_birthrates))
 
 #plot second diff of time series with linear region line
 pdf('../images/second_diff_ts.pdf')
-ts.plot(diff(diff(female_birthrates)), main = "First Difference of Birthrates Time Series")
+ts.plot(diff(diff(female_birthrates)), main = "Second Difference of Birthrates Time Series")
 abline(reg = lm(diff(diff(female_birthrates)) ~ time(diff(diff(female_birthrates)))), col = 'red')
 dev.off()
 
 
 pdf('../images/seconddiff_ts_acf_pacf.pdf')
 par(mfrow = c(2, 1))
-acf(second_diff, main = "ACF of Second Difference of Birthrates")
-pacf(second_diff, main = "PACF of Second Difference of Birthrates")
+acf(diff(diff(female_birthrates)), main = "ACF of Second Difference of Birthrates")
+pacf(diff(diff(female_birthrates)), main = "PACF of Second Difference of Birthrates")
 dev.off()
 
 
@@ -217,6 +217,8 @@ sink('../results/arima_test_results.txt')
 ar_test_1
 ar_test_2
 sink()
+
+
 
 
 
