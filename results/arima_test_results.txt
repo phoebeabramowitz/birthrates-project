@@ -1,0 +1,2 @@
+[1] "Best ARIMA Model Test MSE: 46.5991992308594"
+[1] "Second Best ARIMA Model Test MSE: 47.546990399347"
