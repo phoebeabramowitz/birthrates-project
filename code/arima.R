@@ -1,4 +1,9 @@
 #Arima R script
+library(dplyr)
+library(astsa)
+library(tseries)
+library(TSA)
+library(tsoutliers)
 
 #read in data
 raw_birthrates = read.csv("../data/daily-total-female-births-in-cal.csv")
@@ -70,6 +75,9 @@ female_birthrates <- birthrates_wo_ao
 pdf('../images/ts_no_outlier.pdf')
 plot.ts(female_birthrates, main = "Time Series Plot of Female Birthrate Data (Outlier Removed)")
 dev.off()
+
+#write in clean data
+write.csv(female_birthrates, file = "../data/clean_data.csv", row.names = TRUE)
 
 #plot acf and pacf of ts
 pdf('../images/original_ts_acf_pacf.pdf')
