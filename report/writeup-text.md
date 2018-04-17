@@ -21,11 +21,7 @@ Before we begin our analysis of the Female Birthrates time series, we need to do
 
 ![original\_time\_series](../images/orignal_ts.pdf)
 
-Before we continued, we checked for outliers using the method suggested to us. Using the tso() function, we saw we had one additive outlier at time 266. Interesting, we found that this outlier could correlate with conception on New Years Eve, or just during the holidays in general, so the outlier does make sense. We decided to remove this outlier. Here is a plot showing the existence of the additive outlier:
-
-![outlier](../images/outliers.pdf)
-
-We decided to remove this outlier. Here is a plot showing the original time series vs the time series without the additive outlier:
+Before we continued, we checked for outliers using the method suggested to us. Using the tso() function, we saw we had one additive outlier at time 266. Interesting, we found that this outlier could correlate with conception on New Years Eve, or just during the holidays in general, so the outlier does make sense. We decided to remove this outlier. Here is a plot showing the original time series vs the time series without the additive outlier:
 
 ![outlier\_affect](../images/outlier_affect.pdf)
 
@@ -41,15 +37,11 @@ Clearly the mean is not dependent on time, but in order to check if this time se
 
 ![detrend\_acf\_pacf](../images/detrended_ts_acf_pacf.pdf)
 
-For both the PACF and ACF the values are not tailing off, and actually reach a spike at lag-21 before tailing off. This could mean the time series is not stationary, or it could mean the time series is seasonal.
-
-In order to see if the time series is seasonal lets look at the original ACF and PACF of the time series.
+For both the PACF and ACF the values are not tailing off, and actually reach a spike at lag-21 before tailing off. This could mean the time series is not stationary, or it could mean the time series is seasonal. In order to see if the time series is seasonal lets look at the original ACF and PACF of the time series.
 
 ![orginal\_acf\_pacf](../images/original_ts_acf_pacf.pdf)
 
-There doesn’t seem to be a seasonal trend in the original time series or the de-trended time series. We will come back to this when we are fitting our ARIMA model, but we have strong evidence throughout our analysis that this data is not seasonal.
-
-The next step would be to look at the differenced time series. Below is the differenced time series with a line noting the average of the time series. Clearly the mean of differenced time series does not depend on time.
+There doesn’t seem to be a seasonal trend in the original time series or the de-trended time series. We will come back to this when we are fitting our ARIMA model, but we have strong evidence throughout our analysis that this data is not seasonal. The next step would be to look at the differenced time series. Below is the differenced time series with a line noting the average of the time series. Clearly the mean of differenced time series does not depend on time.
 
 ![differnced\_ts](../images/first_diff_ts.pdf)
 
@@ -59,13 +51,7 @@ Now we can look at the ACF and PACF of the time series. These will also be used 
 
 Once again we don’t have clear evidence this is stationary. Clearly the model is not just a AR or MA model, since both the PACF and ACF don’t cut off sharply. For the ACF the significance seems to cut off after lag-1, but there is a spike at lag-21. For the PACF the significance cuts off after lag-7, but there is a spike at lag-20. Neither the PACF nor ACF tails off.
 
-Because we don’t have strong evidence we have a stationary time series yet we are going to look at the second difference of the time series. Because we want to avoid over-differencing for our ARIMA models, we will only use the second difference if it clearly makes the model look stationary. Below is the plot of the second differenced time series, followed by the ACF and PACF plots
-
-![second\_diff\_ts](../images/second_diff_ts.pdf)
-
-![seconddiff\_ts\_acf\_pacf](../images/seconddiff_ts_acf_pacf.pdf)
-
-There isn’t any strong evidence that differencing again made an impact on making the time series more stationary, so to avoid over-differencing we will only look at the first difference for out models.
+Because we don’t have strong evidence we have a stationary time series yet we are going to look at the second difference of the time series. Because we want to avoid over-differencing for our ARIMA models, we will only use the second difference if it clearly makes the model look stationary. You can see the results of these plots in the appendix, however there isn’t any strong evidence that differencing again made an impact on making the time series more stationary, so to avoid over-differencing we will only look at the first difference for out models.
 
 ARIMA
 =====
@@ -76,53 +62,19 @@ Using sarima() here are the results of the ARIMA(20, 1, 21) model:
 
 ![second\_model](../images/second_model.pdf)
 
-There are several insights the plots from sarima() provide for us here. For one, the Normal Q-Q plot of standardized residuals tells us that the residuals are normally distributed, so the assumption of a Gaussian distribution is valid. We also see from the ACF of the residuals that the ACF at any lag is within the innovations significance bar, which gives evidence that this is a good model. Before looking at the model statistics, lets use sarima() on the other two models.
-
-Here are the results of running sarima() on the ARIMA(7, 1, 1) model:
+There are several insights the plots from sarima() provide for us here. For one, the Normal Q-Q plot of standardized residuals tells us that the residuals are normally distributed, so the assumption of a Gaussian distribution is valid. We also see from the ACF of the residuals that the ACF at any lag is within the innovations significance bar, which gives evidence that this is a good model. Before looking at the model statistics, lets use sarima() on the other two models. Here are the results of running sarima() on the ARIMA(7, 1, 1) model:
 
 ![first\_model](../images/first_model.pdf)
 
-Once again the assumption of normality is supported, but there is a spike at lag-21 for the ACF of the residuals, implying this may not be a great model.
-
-Let’s look at the ARIMA(1, 1, 1) model, and then compare the model statistics for each:
+Once again the assumption of normality is supported, but there is a spike at lag-21 for the ACF of the residuals, implying this may not be a great model. Let’s look at the ARIMA(1, 1, 1) model, and then compare the model statistics for each:
 
 ![third\_model](../images/third_model.pdf)
 
-The plots for this model look similar to ARIMA(7, 1, 1), however, the Ljung-Box statistics is showing higher p-values, implying this is a worse model.
+The plots for this model look similar to ARIMA(7, 1, 1), however, the Ljung-Box statistics is showing higher p-values, implying this is a worse model. You can see the model statistics of each ARIMA model in the appendix.
 
-Let’s look at the model statistics for each model.
+The ARIMA(20, 1, 21) model has the best model statistics. However, as I mentioned before, I don't want to only look at a very complicated model, so I will continue to analyze ARIMA(7, 1, 1), since it has the second best model statistics. In order to find which of these two models is best, I am going to see how they perform in forecasting unseen data. I am going to train both models using a train data set with the last 10 observations from female birthrates missing, then see how well the models can forecast these 10 observations.You can see both plots for the forecasted training data in the appendix. Both forecasts don't look like they are doing great, but let's compare the test MSE to see which one performed better.
 
-Here is the AIC, AICc, and BIC of the first model:
-
-AIC: 4.89305737044942 AICc: 4.93083315673372 BIC: 4.3418126823685
-
-Here is the AIC, AICc, and BIC of the second model:
-
-AIC: 4.87895885933218 AICc: 4.88614096598027 BIC: 3.97512071188627
-
-Here is the AIC, AICc, and BIC of the third model:
-
-AIC: 4.86904410372145 AICc: 4.87482796977929 BIC: 3.90109805457282
-
-The ARIMA(20, 1, 21) model has the best model statistics. However, as I mentioned before, I don't want to only look at a very complicated model, so I will continue to analyze ARIMA(7, 1, 1), since it has the second best model statistics.
-
-In order to find which of these two models is best, I am going to see how they perform in forecasting unseen data. I am going to train both models using a train data set with the last 10 observations from female birthrates missing, then see how well the models can forecast these 10 observations.
-
-Below you can see the plot when I forecasted using the training set on the ARIMA(20, 1, 21) model:
-
-![train\_arima\_forecast](../images/train_arima_forecast.pdf)
-
-And now below you can see the plot when I forecasted using the training set on the ARIMA(7, 1, 1) model:
-
-![train\_second\_arima\_forecast](../images/train_second_arima_forecast.pdf)
-
-Both forecasts don't look like they are doing great, but let's compare the test MSE to see which one performed better.
-
-The test MSE for the ARIMA(20, 1, 21) model was 46.5991992308594.
-
-The test MSE for the ARIMA(7, 1, 1) model was 47.546990399347.
-
-As you can see the test MSE of the ARIMA(20, 1, 21) model was slightly better. We can now move on to forecasting the best model, the ARIMA(20, 1, 21) model. Below is the 10 step ahead forecast for the ARIMA(20, 1, 21 model):
+The test MSE for the ARIMA(20, 1, 21) model was 46.5991992308594. The test MSE for the ARIMA(7, 1, 1) model was 47.546990399347. As you can see the test MSE of the ARIMA(20, 1, 21) model was slightly better. We can now move on to forecasting the best model, the ARIMA(20, 1, 21) model. Below is the 10 step ahead forecast for the ARIMA(20, 1, 21 model):
 
 ![arima\_forecast](../images/arima_forecast.pdf)
 
@@ -367,3 +319,36 @@ ar_test_1
 ar_test_2
 sink()
 ```
+
+Second differenced model
+------------------------
+
+![second\_diff\_ts](../images/second_diff_ts.pdf)
+
+![seconddiff\_ts\_acf\_pacf](../images/seconddiff_ts_acf_pacf.pdf)
+
+Model Statistics for the 3 ARIMA models
+---------------------------------------
+
+Here is the AIC, AICc, and BIC of the ARIMA(20, 1, 21) model:
+
+AIC: 4.89305737044942 AICc: 4.93083315673372 BIC: 4.3418126823685
+
+Here is the AIC, AICc, and BIC of the ARIMA(7, 1, 1) model:
+
+AIC: 4.87895885933218 AICc: 4.88614096598027 BIC: 3.97512071188627
+
+Here is the AIC, AICc, and BIC of the ARIMA(1, 1, 1) model:
+
+AIC: 4.86904410372145 AICc: 4.87482796977929 BIC: 3.90109805457282
+
+Forecast plots using the training data of the 2 ARIMA models
+------------------------------------------------------------
+
+Below you can see the plot when I forecasted using the training set on the ARIMA(20, 1, 21) model:
+
+![train\_arima\_forecast](../images/train_arima_forecast.pdf)
+
+And now below you can see the plot when I forecasted using the training set on the ARIMA(7, 1, 1) model:
+
+![train\_second\_arima\_forecast](../images/train_second_arima_forecast.pdf)
