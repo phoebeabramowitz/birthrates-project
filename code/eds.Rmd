@@ -179,12 +179,12 @@ Let's look at the ACF and PACF of the first difference to see if this time serie
 
 ```{r}
 #plot acf of first diffence
-acf(first_diff, main = "ACF of First Difference of Birthrates")
+acf(diff(female_birthrates), main = "ACF of First Difference of Birthrates")
 ```
  
 ```{r}
 #pacf of first difference of time series
-pacf(first_diff, main = "PACF of First Difference of Birthrates")
+pacf(diff(female_birthrates), main = "PACF of First Difference of Birthrates")
 ```
 
 This seems better than the time series detrended via OLS, but still does not look great.
@@ -203,12 +203,12 @@ abline(reg = lm(diff(diff(female_birthrates)) ~ time(diff(diff(female_birthrates
 
 ```{r}
 #acf of second diff
-acf(second_diff, main = "ACF of Second Difference of Birthrates")
+acf(diff(diff(female_birthrates)), main = "ACF of Second Difference of Birthrates")
 ```
 
 ```{r}
 #plot pacf
-pacf(second_diff, main = "PACF of Second Difference of Birthrates")
+pacf(diff(diff(female_birthrates)), main = "PACF of Second Difference of Birthrates")
 ```
 
 
@@ -218,7 +218,9 @@ We want to avoid overdifferencing, so we only want to use the second difference 
 
 We have a couple of different options to pick for this model. None of the models proves evidence that it is obviously a certain ARIMA model, so we are going to fit a couple of different models.
 
+=======
 First I am going to look at the first differenced model. Since the PACF and ACF don't cut off at any point, we don't have an obvious model to pick. However, we don't want our model to be overcomplicated, so I am going to pick a couple of good guess, some that are overly simple and some that are overly complicated. It seems like the ACF cuts off at lag-1 for quite a while, before becoming significant again at lag-21. Because of this I will add an MA(1) polynomial to most models, except for the overly complicated model. Looking at the PACF we see a cut off at lag-7 before it becomes significant again at lag-20, so we can add an AR(7) term for a simple model and AR(20) term for a complicated model.
+
 
 ```{r}
 #fit simple model
@@ -238,7 +240,7 @@ It seems like the complicated model is the best, but let's investigate the less 
 
 ```{r}
 #forecast for best diff model
-first_forcast <- sarima.for(female_birthrates, n.ahead = 10, p= 20, d = 1, q = 21, main = "Forecast for Best ARIMA Model")
+first_forcast <- sarima.for(female_birthrates, n.ahead = 10, p= 20, d = 1, q = 21)
 ```
 
 ```{r}
@@ -248,14 +250,20 @@ second_best_forcast <- sarima.for(female_birthrates, n.ahead = 10, p= 7, d = 1, 
 
 
 ```{r}
+train <- female_birthrates[1:355]
+test <- female_birthrates[356:365]
 train_forcast <- sarima.for(train, n.ahead = 10, p= 20, d = 1, q = 21)
 arima_preds <- train_forcast$pred
 arima_preds
 ```
 
 
+```{r}
+sum((1/10)*(test - arima_preds)^2)
+```
 
 
+```{r}
 
-
+```
 
