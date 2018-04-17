@@ -211,194 +211,9 @@ acf(second_diff, main = "ACF of Second Difference of Birthrates")
 pacf(second_diff, main = "PACF of Second Difference of Birthrates")
 ```
 
-We want to avoid overdifferencing, so we only want to use the second difference if we can tell the first difference is still not stationary. One way to check that is by using a Dickey-Fuller test.
 
-
-```{r}
-adf.test(female_birthrates, alternative = "stationary", k = 6)
-adf.test(female_birthrates, alternative = "stationary", k = 3)
-adf.test(female_birthrates, alternative = "explosive", k = 0)
-```
-
-```{r}
-adf.test(diff(female_birthrates), alternative = "stationary")
-adf.test(diff(female_birthrates), alternative = "explosive", k = 0)
-```
-
-
-There is also a good chance that we have seasonality here.
-
-=======
-```
-
-```{r}
-#convert to time series
-female_birthrates <- ts(female_birthrates)
-```
-
-#EDA
-First let's check for outliers using tso
-
-```{r}
-#check for outliers
-outliers <- tso(female_birthrates, types = c("TC", "AO", "LS", "IO", "SLS"))
-outliers
-```
-
-It looks like an Additive Outlier, or isolated speak, is present at day 266.
-
-Let's look at the plot.
-
-```{r}
-#plot outliers
-plot(outliers)
-```
-
-As you can see we have one outlier affecting our data.
-
-```{r}
-#get index and time of outlier
-outlier_indx <- outliers$outliers$ind
-
-#length of ts
-n <- length(female_birthrates)
-
-#find outlier effect
-ao <- outliers("AO", outlier_indx)
-ao_effect <- outliers.effects(ao, n)
-coefhat <- as.numeric(outliers$outliers['coefhat'])
-ao_effect <- coefhat*ao_effect
-
-#generate outlier affect time series
-ao_effect_ts <- ts(ao_effect, frequency = frequency(female_birthrates), start= start(female_birthrates))
-
-#generate time series without outlier
-birthrates_wo_ao <- female_birthrates - ao_effect_ts
-
-#plot original time series and time series without outlier
-par(mfrow = c(3, 1))
-
-plot(female_birthrates, main = "Original Time Series")
-
-plot(birthrates_wo_ao, main = "Time Series without Outlier")
-
-plot(ao_effect_ts, main = "Outlier Plot")
-```
-
-Let's just remove this outlier and continue our analysis.
-
-```{r}
-#generate birthrates time series without outlier
-rownames(birthrates_wo_ao) <- clean_birthrates$date
-
-#replace female_birthrates data frame
-female_birthrates <- birthrates_wo_ao
-```
-
-```{r}
-#plot time series
-plot.ts(female_birthrates, main = "Time Series Plot of Female Birthrate Data")
-```
-
-Let's plot the ACF and PACF of this time series.
-
-```{r}
-#plot acf of ts
-acf(female_birthrates, main = "ACF of Birthrates Time Series")
-```
-
-```{r}
-#plot pacf
-pacf(female_birthrates, main = "PACF of Female Birthrates")
-```
-
-It appears our data is not stationary. One issue might be there is an underlying trend in the data, and the mean is dependent on time.
-
-
-Let's see if there is an underlying trend in our data by fitting a linear model.
-
-```{r}
-#plot ts with regression line
-plot.ts(female_birthrates, main = "Time Series with OLS regression line")
-abline(reg = lm(female_birthrates ~ time(female_birthrates)), col = 'red')
-```
- 
-It seems like there is a slight trend. Let's plot the residuals of the regression, which should be the detrended time series.
-
-
-```{r}
-#plot detrended time series vie OLS regression
-plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrates Detrended", xlab = "Time")
-abline(lm(resid(reg) ~ time(resid(reg))), col = 'red')
-```
- 
-We can see now our data is detrended, and it appears the mean of the time series in not dependent on time.
-
-Let's look at the acf and pacf of the detrended via OLS time series.
-
-```{r}
-#acf of time series detrended via OLS
-acf(reg$residuals, main = "ACF of Birthrates Detrended via OLS")
-```
- 
-```{r}
-#pacf of time series detrended via OLS
-pacf(reg$residuals, main = "PACF of Birthrates Detrended via OLS")
-```
-
-While detrended via OLS looks like it produces a detrended time series, the ACF and PACF do not seem to be tailing off, which implies the time series may not be stationary.
- 
-Let's take a look at the first difference of the time series.
- 
-```{r}
-#take the first difference of the time series
-diff_vals <- diff(female_birthrates)
-
-#plot diff of time series with linear region line
-ts.plot(diff(female_birthrates), main = "First Difference of Birthrates Time Series")
-abline(reg = lm(diff(female_birthrates) ~ time(diff(female_birthrates))), col = 'red')
-```
- 
-It seems like the first difference does not have an underlying trend, which is expected.
-
-Let's look at the ACF and PACF of the first difference to see if this time series is stationary.
-
-```{r}
-#plot acf of first diffence
-acf(first_diff, main = "ACF of First Difference of Birthrates")
-```
- 
-```{r}
-#pacf of first difference of time series
-pacf(first_diff, main = "PACF of First Difference of Birthrates")
-```
-
-This seems better than the time series detrended via OLS, but still does not look great.
-
-Let's look at the second difference.
-
-```{r}
-#get second diff
-second_diff_vals <- diff(diff(female_birthrates))
-
-#plot second diff of time series with linear region line
-ts.plot(diff(diff(female_birthrates)), main = "First Difference of Birthrates Time Series")
-abline(reg = lm(diff(diff(female_birthrates)) ~ time(diff(diff(female_birthrates)))), col = 'red')
-```
-
-
-```{r}
-#acf of second diff
-acf(second_diff, main = "ACF of Second Difference of Birthrates")
-```
-
-```{r}
-#plot pacf
-pacf(second_diff, main = "PACF of Second Difference of Birthrates")
-```
 
 We want to avoid overdifferencing, so we only want to use the second difference if we can tell the first difference is still not stationary. There may be seasonality present, but it is unlikely, as there are no definite patterns in the spikes of the ACF or PACF.
-
 
 
 We have a couple of different options to pick for this model. None of the models proves evidence that it is obviously a certain ARIMA model, so we are going to fit a couple of different models.
@@ -407,7 +222,7 @@ First I am going to look at the first differenced model. Since the PACF and ACF 
 
 ```{r}
 #fit simple model
-sarima(female_birthrates, 7, 1, 1)
+first_model <- sarima(female_birthrates, 7, 1, 1)
 ```
 
 ```{r}
@@ -418,7 +233,28 @@ sarima(female_birthrates, 20, 1, 21)
 sarima(female_birthrates, 1, 1, 1)
 ```
 
-It seems like the complicated model is the best.
+It seems like the complicated model is the best, but let's investigate the less complciated one too.
+
+
+```{r}
+#forecast for best diff model
+first_forcast <- sarima.for(female_birthrates, n.ahead = 10, p= 20, d = 1, q = 21, main = "Forecast for Best ARIMA Model")
+```
+
+```{r}
+second_best_forcast <- sarima.for(female_birthrates, n.ahead = 10, p= 7, d = 1, q = 1)
+```
+
+
+
+```{r}
+train_forcast <- sarima.for(train, n.ahead = 10, p= 20, d = 1, q = 21)
+arima_preds <- train_forcast$pred
+arima_preds
+```
+
+
+
 
 
 
