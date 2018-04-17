@@ -18,6 +18,7 @@ library(astsa)
 library(tseries)
 library(TSA)
 library(tsoutliers)
+library(forecast)
 ```
 
 ```{r}
@@ -138,6 +139,8 @@ It seems like there is a slight trend. Let's plot the residuals of the regressio
 
 
 ```{r}
+#git model
+reg = lm(female_birthrates ~ time(female_birthrates))
 #plot detrended time series vie OLS regression
 plot(resid(reg), type = 'l', main = "Detrended via Simple OLS", ylab = "Birthrates Detrended", xlab = "Time")
 abline(lm(resid(reg) ~ time(resid(reg))), col = 'red')
@@ -149,12 +152,12 @@ Let's look at the acf and pacf of the detrended via OLS time series.
 
 ```{r}
 #acf of time series detrended via OLS
-acf(reg$residuals, main = "ACF of Birthrates Detrended via OLS")
+acf(resid(reg), main = "ACF of Birthrates Detrended via OLS")
 ```
  
 ```{r}
 #pacf of time series detrended via OLS
-pacf(reg$residuals, main = "PACF of Birthrates Detrended via OLS")
+pacf(resid(reg), main = "PACF of Birthrates Detrended via OLS")
 ```
 
 While detrended via OLS looks like it produces a detrended time series, the ACF and PACF do not seem to be tailing off, which implies the time series may not be stationary.
@@ -394,22 +397,29 @@ acf(second_diff, main = "ACF of Second Difference of Birthrates")
 pacf(second_diff, main = "PACF of Second Difference of Birthrates")
 ```
 
-We want to avoid overdifferencing, so we only want to use the second difference if we can tell the first difference is still not stationary. One way to check that is by using a Dickey-Fuller test.
+We want to avoid overdifferencing, so we only want to use the second difference if we can tell the first difference is still not stationary. There may be seasonality present, but it is unlikely, as there are no definite patterns in the spikes of the ACF or PACF.
 
+
+
+We have a couple of different options to pick for this model. None of the models proves evidence that it is obviously a certain ARIMA model, so we are going to fit a couple of different models.
+
+First I am going to look at the first differenced model. Since the PACF and ACF don't cut off at any point, we don't have an obvious model to pick. However, we don't want our model to be overcomplicated, so I am going to pick a couple of good guess, some that are overly simple and some that are overly complicated. It seems like the ACF cuts off at lag-1 for quite a while, before becoming significant again at lag-21. Because of this I will add an MA(1) polynomial to most models, except for the overly complicated model. Looking at the PACF we see a cut off at lag-7 before it becomes significant again at lag-20, so we can add an AR(7) term for a simple model and AR(20) term for a complicated model.
 
 ```{r}
-adf.test(female_birthrates, alternative = "stationary", k = 6)
-adf.test(female_birthrates, alternative = "stationary", k = 3)
-adf.test(female_birthrates, alternative = "explosive", k = 0)
+#fit simple model
+sarima(female_birthrates, 7, 1, 1)
 ```
 
 ```{r}
-adf.test(diff(female_birthrates), alternative = "stationary")
-adf.test(diff(female_birthrates), alternative = "explosive", k = 0)
+sarima(female_birthrates, 20, 1, 21)
 ```
 
+```{r}
+sarima(female_birthrates, 1, 1, 1)
+```
 
-There is also a good chance that we have seasonality here.
+It seems like the complicated model is the best.
+
 
 
 
