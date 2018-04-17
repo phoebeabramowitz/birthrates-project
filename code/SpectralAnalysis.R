@@ -28,15 +28,17 @@ spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
 dev.off()
 
 #exhibit all local maxima
+pdf('../images/pgram-local-maxima.pdf')
 pgram <- spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
 key_freq_ind <- c(1, which(diff(sign(diff(pgram$spec)))==-2) + 1)
 key_freq <- pgram$freq[key_freq_ind]
 abline(v=key_freq, lty=3)
+dev.off()
 
 #choose the top three lags
 top_freq <- key_freq[order(pgram$spec[key_freq_ind], decreasing = T)][1:3]
 
-#parametric spectral estimator
+#compare to the parametric spectral estimator
 pdf('../images/parametric-spectral-estimator.pdf')
 pgram <- spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
 pgram_ar <- spec.ar(fem_birth, plot=F)
