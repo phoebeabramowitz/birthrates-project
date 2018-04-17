@@ -226,7 +226,6 @@ adf.test(diff(female_birthrates), alternative = "explosive", k = 0)
 There is also a good chance that we have seasonality here.
 
 =======
-```
 
 ```{r}
 #convert to time series
