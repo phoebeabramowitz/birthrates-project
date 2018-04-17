@@ -9,22 +9,25 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Introduction: 
+#Introduction 
 
 *Elaborate on the background of the problem/dataset. Where does the dataset come from?  How are the data collected?*
 
-The dataset describes the number of daily female births in California in 1959. The units are a count and there are 365 observations. The data is provided by the Time Series Data Library. The data originally comes from analysis of birth certificates (I'll confirm this with a reliable source not just the random sentance I found).
+The dataset describes the number of female births by day in California in 1959, January first through December 31st. The units are a count and there are 365 observations. The data is provided by the Time Series Data Library, found at <https://datamarket.com/en/data/list/?q=provider:tsdl>. The data comes from analysis of birth certificates. 
 
 *Explain the motivation for studying the particular dataset of interest. Why is the dataset interesting?*
 
-  This dataset is both interesting for the sake of general curiosity and for the impact that date of birth can have on individuals' lives. For example, in his book *Outliers*, Malcolm Gladwell demonstrates that being born in a month such that you're the oldest of your cohort in school and childhood activities leads to increased rates of success. 
-  Regardless of it's veracity, astrology is a common way for people to make sense of their lives. Timing of birth-down to the day- can affect people's perceptions of themselves and their circumstances. 
-  In probability, the "birthday problem" is often discussed with the premise that "all birthdays are equally likeley". However, the reasoning for and extent of the disclaimer that this is not necessarily true is rarely expounded upon in these discussions.
+  This dataset is both interesting for the sake of general curiosity and for the impact that date of birth can have on individuals' lives. For example, in his popular book *Outliers*, Malcolm Gladwell demonstrates that being born on a date such that you're the oldest of your cohort in school and childhood activities leads to increased rates of success in academia, sports, ect. 
+  Regardless of it's veracity, astrology is an immensely popular way for people to make sense of their lives. Timing of birth-down to the specific day- can affect people's perceptions of themselves and their circumstances. These perceptions can then impact people's decision making.  
+  "The birthday problem" is often discussed in the study of probability. The problem, which asks how likeley it is that at least two people in a group share a birthday, is often prefaced with the assumption that "all birthdays are equally likeley". However, the reasoning for and extent of the disclaimer that this is not necessarily true is rarely expounded upon in these discussions.
   
 
 
 #Conclusion
 
-Given that we only have data for one year, accounting for the spike in September, which could be seasonality if looked at over multiple years, is out of the scope of our analysis. This spike in September suggests that people are concieving around the holidays. It's possible that he outlier at 266 days is caused by conception on New Years Eve.
+  Given that we only have data for one year, accounting for the spike in September, which could be seasonality if looked at over multiple years, is out of the scope of our analysis. It's impossible to tell from our dataset how much of the upward trend demonstrated by slope of our OLS regression line is due to a long-term increase in birthrates, and how much of it is due to a seasonal increase in birthrates as an individual year progresses from January. It's worthwhile to analyze similar birthdate data over several years. 
+  The spike in September suggests that people are concieving around the holidays. It's possible that the outlier at 266 days is caused by conception on or around New Years Eve.
+  This discussion of birthrates on particular dates also suggest that it would be interesting to look at data regarding gestation time from conception to birth.
+
 
 
