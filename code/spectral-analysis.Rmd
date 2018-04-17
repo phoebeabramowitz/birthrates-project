@@ -38,7 +38,7 @@ mvspec(fem_birth,kernel('modified.daniell',5), taper = 0)
 #but I'll leave that to your discretion if you wanna take that log arg out 
 spec.pgram(fem_birth,kernel('modified.daniell',c(1,6,1)), taper = 0.1,log="no")
 ```
-Note for Jack: Is there better phrasing than "top frequencies"?
+
 
 From this smoothed periodogram, we can choose the top three lags and feed the modal. We append the first fundamental frequency and exhibit all local maxima on the periodogram before selecting the top three lags. 
 ```{r}
